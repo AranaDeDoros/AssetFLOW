@@ -223,7 +223,7 @@ case class CMYKColor(cyan: Int, magenta: Int, yellow: Int, key: Int)
 }
 
   /** palette maker */
-  object ColorThiefPalette {
+  object PaletteMaker {
 
 
     /**
@@ -282,7 +282,7 @@ case class CMYKColor(cyan: Int, magenta: Int, yellow: Int, key: Int)
           val textX = x + (blockWidth - textWidth) / 2
           val textY = blockHeight + (labelHeight + textHeight) / 2 - metrics.getDescent
 
-          g.drawString(hex, textX, textY)
+          g.drawString(hex.toUpperCase(), textX, textY)
         }
         g.dispose()
         ImageIO.write(img, "png", output)

@@ -1,6 +1,6 @@
 package example
 
-import coloring.{CMYKColor, ColorThiefPalette, Magenta, RGBColor, Red, Yellow}
+import coloring.{CMYKColor, Magenta, PaletteMaker, RGBColor, Red, Yellow}
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
 import web.guidelines.{BackgroundImage, HeroImage, WebsiteImageType}
@@ -150,27 +150,23 @@ import java.io.File
 object ColorThiefPalettes {
 
   def main(args: Array[String]): Unit = {
-    val imagePath = "input/1629686784875.jpg"
+    val imagePath = "input/wall.jpg"
     val outputPath = "palette.png"
     val colorCount = 6
 
-    val palette = ColorThiefPalette.getPalette(imagePath, colorCount)
+    val palette = PaletteMaker.getPalette(imagePath, colorCount)
 
     if (palette == null) {
       println("could not extract palette.")
       return
     }
-
     val colors = palette.map(arr => (arr(0), arr(1), arr(2))).toList
-
-    val saved = ColorThiefPalette.drawPalette(colors, outputPath)
+    val saved = PaletteMaker.drawPalette(colors, outputPath)
     val result = saved match {
-      case Right(value) => s"palette extracted and saved to $outputPath"
+      case Right(_) => s"palette extracted and saved to $outputPath"
       case Left(err) => "error extracting palette" + err
     }
-
     println(result)
-
   }
 
 
