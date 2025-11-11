@@ -1,11 +1,6 @@
 package coloring
 
-import de.androidpit.colorthief.ColorThief
-
-import java.awt.image.BufferedImage
-import java.awt.{Color, Font, RenderingHints}
-import java.io.File
-import javax.imageio.ImageIO
+import java.awt.Color
 import scala.util.Try
 
 trait DigitalColor[C <: Channel, V, Self <: DigitalColor[C, V, Self]] {
@@ -221,74 +216,3 @@ case class CMYKColor(cyan: Int, magenta: Int, yellow: Int, key: Int)
   /**human-readable debug string */
   override def toString: String =  s"CMYK(c=$cyan%, m=$magenta%, y=$yellow%, k=$key%)"
 }
-
-  /** palette maker */
-  object PaletteMaker {
-
-
-    /**
-     * Gets an array with the image colors
-     * @param imagePath
-     * @param colorCount
-     * @return
-     */
-    def getPalette(imagePath: String, colorCount: Int): Array[Array[Int]] = {
-      val image = ImageIO.read(new File(imagePath))
-      val palette = ColorThief.getPalette(image, colorCount)
-      palette
-    }
-
-    /**
-     * Creates a palette image
-     * @param colors
-     * @param outputPath
-     * @return
-     */
-    def drawPalette(colors: List[(Int, Int, Int)], outputPath: String): Either[Throwable, Boolean] = {
-      try {
-        val hexColors = colors.map { case (r, g, b) => f"#$r%02x$g%02x$b%02x" }
-
-        val output = new File(outputPath)
-        val n = colors.size
-        val blockWidth = 160
-        val blockHeight = 100
-        val labelHeight = 40
-        val imgWidth = n * blockWidth
-        val imgHeight = blockHeight + labelHeight
-
-        val img = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_INT_RGB)
-        val g = img.createGraphics()
-
-        val fontFile = new File("src/main/resources/plus-jakarta.ttf")
-        val baseFont = Font.createFont(Font.TRUETYPE_FONT, fontFile)
-        val font = baseFont.deriveFont(Font.BOLD, 18f)
-        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON)
-        g.setFont(font)
-
-        for (((color, hex), i) <- colors.zip(hexColors).zipWithIndex) {
-          val (r, gVal, b) = color
-          val x = i * blockWidth
-
-          g.setColor(new Color(r, gVal, b))
-          g.fillRect(x, 0, blockWidth, blockHeight)
-
-          val textColor =  Color.WHITE
-          g.setColor(textColor)
-
-          val metrics = g.getFontMetrics
-          val textWidth = metrics.stringWidth(hex)
-          val textHeight = metrics.getHeight
-
-          val textX = x + (blockWidth - textWidth) / 2
-          val textY = blockHeight + (labelHeight + textHeight) / 2 - metrics.getDescent
-
-          g.drawString(hex.toUpperCase(), textX, textY)
-        }
-        g.dispose()
-        ImageIO.write(img, "png", output)
-        Right(true)
-      } catch {
-        case t: Throwable => Left(t)
-      }
-    }
-  }
