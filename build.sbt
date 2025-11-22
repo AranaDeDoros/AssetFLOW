@@ -2,8 +2,8 @@ import Dependencies._
 
 ThisBuild / scalaVersion     := "2.13.16"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
-ThisBuild / organizationName := "example"
+ThisBuild / organization     := "com.aranadedoros"
+ThisBuild / organizationName := "aranadedoros"
 
 lazy val scrimageVersion = "4.0.31"
 resolvers += Resolver.mavenCentral
