@@ -1,9 +1,14 @@
-import Dependencies._
+import Dependencies.*
+
+import scala.collection.Seq
 
 ThisBuild / scalaVersion     := "2.13.16"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
 ThisBuild / organization     := "com.aranadedoros"
 ThisBuild / organizationName := "aranadedoros"
+Compile / doc / scalacOptions ++= Seq(
+  "-skip-packages", "example"
+)
 
 lazy val scrimageVersion = "4.0.31"
 resolvers += Resolver.mavenCentral
