@@ -35,6 +35,8 @@ case object Green extends RGBChannel
 /** Represents the blue channel of an RGB color. */
 case object Blue extends RGBChannel
 
+case object Alpha extends RGBChannel
+
 
 /** Represents an RGB color with red, green, and blue components.
  *
@@ -47,13 +49,13 @@ case object Blue extends RGBChannel
  *
  */
 
-case class RGBColor(red: Int, green: Int, blue: Int)
+case class RGBColor(red: Int, green: Int, blue: Int, alpha: Int = 255)
   extends DigitalColor[RGBChannel, Int, RGBColor] {
   /** Converts this RGBColor instance into a java.awt.Color object.
    * @return
    * a Color object representing this RGB color
    */
-  def color: Color = new Color(red, green, blue)
+  def color: Color = new Color(red, green, blue, alpha)
 
   /** Clamps a color channel value to the valid range [0, 255]. Values below 0
    * are set to 0, and values above 255 are set to 255.
@@ -75,6 +77,7 @@ case class RGBColor(red: Int, green: Int, blue: Int)
     case Red   => copy(red = clamp(f(red)))
     case Green => copy(green = clamp(f(green)))
     case Blue  => copy(blue = clamp(f(blue)))
+    case Alpha  => copy(alpha = clamp(f(alpha)))
   }
 
   /** Increases or decreases all color channels simultaneously by different
@@ -89,11 +92,12 @@ case class RGBColor(red: Int, green: Int, blue: Int)
    * @return
    * a new RGBColor with adjusted channels
    */
-  def increaseAll(deltaR: Int, deltaG: Int, deltaB: Int): RGBColor =
+  def increaseAll(deltaR: Int, deltaG: Int, deltaB: Int, deltaA: Int = 0): RGBColor =
     RGBColor(
       clamp(red + deltaR),
       clamp(green + deltaG),
-      clamp(blue + deltaB)
+      clamp(blue + deltaB),
+      clamp(alpha + deltaA)
     )
 
   /** Blends this color with another color based on the given ratio. A ratio of
@@ -113,7 +117,8 @@ case class RGBColor(red: Int, green: Int, blue: Int)
     RGBColor(
       clamp(lerp(red, other.red)),
       clamp(lerp(green, other.green)),
-      clamp(lerp(blue, other.blue))
+      clamp(lerp(blue, other.blue)),
+      clamp(lerp(alpha, other.alpha))
     )
   }
 
@@ -169,7 +174,7 @@ object RGBColor {
    */
 
   def fromColor(color: Color): RGBColor =
-    RGBColor(color.getRed, color.getGreen, color.getBlue)
+    RGBColor(color.getRed, color.getGreen, color.getBlue, color.getAlpha)
 
   /** Generates a random RGBColor.
    * @return
@@ -178,7 +183,7 @@ object RGBColor {
 
   def random(): RGBColor = {
     val rnd = new scala.util.Random
-    RGBColor(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
+    RGBColor(rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256))
   }
 }
 
