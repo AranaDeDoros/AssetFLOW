@@ -1,4 +1,5 @@
-# 🖼️ Scala Web Image Toolkit
+# AssetFLOW
+<p align="center"><img height="500" alt="assetflow2" src="https://github.com/user-attachments/assets/185054c9-caea-4228-8fe9-d4165e1915ab" /></p>
 
 > A lightweight, functional-oriented image processing toolkit written in **Scala**, designed for **web development** workflows.
 
@@ -8,12 +9,12 @@ This project demonstrates how to handle image transformations like conversion to
 
 ## Features
 
-- ✅ **Convert images to WebP** with optimal compression
-- ✅ **Generate thumbnails** for desktop and mobile
-- ✅ **Create blurred placeholders** for web performance
-- ✅ **Perform OCR preprocessing** (binarization, tilt, contrast)
-- ✅ **Manipulate and blend colors** functionally
-- ✅ **Follow common web image type guidelines**
+- [x] **Convert images to WebP** with optimal compression
+- [x] **Generate thumbnails** for desktop and mobile
+- [x] **Create blurred placeholders** for web performance
+- [x] **Perform OCR preprocessing** (binarization, tilt, contrast)
+- [x] **Manipulate and blend colors** functionally
+- [x] **Follow common web image type guidelines**
 
 ---
 
