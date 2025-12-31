@@ -20,7 +20,7 @@ object Main extends App {
 //    .from("input")
 //    .outputTo("output")
 //    .convertTo(Webp)
-//    .thumbnails("desktop")
+//    .thumbnails(Desktop)
 //    .run()
 //
 //  OCRPipeline

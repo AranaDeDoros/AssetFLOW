@@ -41,7 +41,7 @@ AssetPipeline
   .from("input")
   .outputTo("output")
   .convertTo(Webp)
-  .thumbnails("desktop")
+  .thumbnails(Desktop)
   .run()
 
 //transformation pipe, 
@@ -78,8 +78,8 @@ webpResults.foreach {
 }
 
 //making thumbnails
-val thumbsDesktop = Utils.createThumbnail(images, outputDir, "desktop")
-val thumbsMobile = Utils.createThumbnail(images, outputDir, "mobile")
+val thumbsDesktop = Utils.createThumbnail(images, outputDir, Desktop)
+val thumbsMobile = Utils.createThumbnail(images, outputDir, Mobile)
 
 println("Thumbnails desktop:")
 thumbsDesktop.foreach {

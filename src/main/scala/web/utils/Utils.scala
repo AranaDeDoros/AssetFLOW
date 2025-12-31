@@ -49,7 +49,7 @@ object Utils {
     val deviceName = "mobile"
   }
   case object Desktop extends ThumbType{
-    val deviceName = "destkop"
+    val deviceName = "desktop"
   }
 
   /** List all supported image files in a folder.
@@ -346,7 +346,6 @@ object Utils {
 
   }
 
-
   /** palette maker */
   object PaletteMaker {
 
@@ -427,6 +426,5 @@ object Utils {
 
     }
   }
-
 
 }
