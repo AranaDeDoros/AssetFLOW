@@ -3,7 +3,7 @@ import Dependencies.*
 import scala.collection.Seq
 
 ThisBuild / scalaVersion     := "2.13.16"
-ThisBuild / version          := "0.2.0-SNAPSHOT"
+ThisBuild / version          := "0.8.0"
 ThisBuild / organization     := "com.aranadedoros"
 ThisBuild / organizationName := "aranadedoros"
 Compile / doc / scalacOptions ++= Seq(
@@ -15,7 +15,7 @@ resolvers += Resolver.mavenCentral
 
 lazy val root = (project in file("."))
   .settings(
-    name := "scala-web-image-toolkit",
+    name := "asset-flow",
 
     libraryDependencies ++= Seq(
       munit % Test,

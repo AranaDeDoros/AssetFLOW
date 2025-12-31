@@ -1,117 +1,128 @@
-# 🖼️ Scala Web Image Toolkit
+# 🖼️ ScalaFLOW
 
-> A lightweight, functional-oriented image processing toolkit written in **Scala**, designed for **web development** workflows.
+A lightweight, functional-oriented image processing toolkit written in **Scala**, designed for **web development** workflows.
 
-This project demonstrates how to handle image transformations like conversion to WebP, thumbnail generation, color manipulation, and OCR preprocessing; using a **pure functional style** with the [Scrimage](https://github.com/sksamuel/scrimage) library.
+This project demonstrates how to handle image transformations like conversion to WebP, thumbnail generation, 
+color manipulation, and OCR preprocessing; using a **functional approach**.
 
 ---
 
 ## Features
 
-- ✅ **Convert images to WebP** with optimal compression
-- ✅ **Generate thumbnails** for desktop and mobile
-- ✅ **Create blurred placeholders** for web performance
-- ✅ **Perform OCR preprocessing** (binarization, tilt, contrast)
-- ✅ **Manipulate and blend colors** functionally
-- ✅ **Follow common web image type guidelines**
+- [x] **Convert images to WebP**
+- [x] **Generate thumbnails** for desktop and mobile
+- [x] **Create blurred placeholders** for skeletons, templating, etc.
+- [x] **Perform OCR preprocessing** (binarization, tilt, contrast, etc.)
+- [x] **Manipulate and blend colors** functionally
+- [x] **Follow common web image type guidelines**
+- [x] **Pipeline-like processing helpers.** 
 
 ---
 
 ##  Tech Stack
 
-| Component | Description |
-|------------|-------------|
-| **Scala** | Functional programming language |
-| **Scrimage** | Image manipulation library |
-| **Java AWT** | For color and basic graphics |
-| **WebP Writer** | High-efficiency image output |
+| Component      | Description                               |
+|----------------|-------------------------------------------|
+| **Scala**      | Functional programming language           |
+| **Scrimage**   | Image manipulation library                |
+| **Java AWT**   | For color handling and basic graphics     |
+| **ColorThief** | Aids in the palette extract functionality |
 
 ---
+### pipeline helpers
+````scala
+
+//batch pipe, 
+// different ops upon same input assets
+// independent results
+AssetPipeline
+  .from("input")
+  .outputTo("output")
+  .convertTo(Webp)
+  .thumbnails("desktop")
+  .run()
+
+//transformation pipe, 
+// different ops upon same input assets
+// previous output is the current op input
+OCRPipeline
+  .from("input")
+  .outputTo("output")
+  .contrast(Normal)
+  .grayscale()
+  .optimize(5.0, 1.3)
+  .rotate(1)
+  .run()
+
+````
 
 ### image creation
 ````scala
-  //folders setup
-  val inputDir = new File("input")
-  val outputDir = new File("output")
-  outputDir.mkdirs()
+ //folders setup
+val inputDir = new File("input")
+val outputDir = new File("output")
+outputDir.mkdirs()
 
-  //listing images
-  val images = Utils.listImages(inputDir)
-  println(s" ${images.size} found ${inputDir.getPath}:")
-  images.foreach(f => println(s"  - ${f.getName}"))
+//listing images
+val images = Utils.listImages(inputDir)
+println(s" ${images.size} found ${inputDir.getPath}:")
+images.foreach(f => println(s"  - ${f.getName}"))
 
-  //converting to webp
-  val webpResults = Utils.convertToWebp(images, outputDir)
-  webpResults.foreach {
-    case Right(f) => println(s"WebP at: ${f.getName}")
-    case Left(err) => println(s"Error: $err")
-  }
+//converting to webp
+val webpResults = Utils.convertTo(images, outputDir)
+webpResults.foreach {
+  case Right(f) => println(s"WebP at: ${f.getName}")
+  case Left(err) => println(s"Error: $err")
+}
 
-  //making thumbnails
-  val thumbsDesktop = Utils.createThumbnail(images, outputDir, "desktop")
-  val thumbsMobile = Utils.createThumbnail(images, outputDir, "mobile")
+//making thumbnails
+val thumbsDesktop = Utils.createThumbnail(images, outputDir, "desktop")
+val thumbsMobile = Utils.createThumbnail(images, outputDir, "mobile")
 
-  println("Thumbnails desktop:")
-  thumbsDesktop.foreach {
-    case Right(f) => println(s"  - ${f.getName}")
-    case Left(err) => println(s"  - Error: $err")
-  }
+println("Thumbnails desktop:")
+thumbsDesktop.foreach {
+  case Right(f) => println(s"  - ${f.getName}")
+  case Left(err) => println(s"  - Error: $err")
+}
 
-  println("Thumbnails mobile:")
-  thumbsMobile.foreach {
-    case Right(f) => println(s"  - ${f.getName}")
-    case Left(err) => println(s"  - Error: $err")
-  }
+println("Thumbnails mobile:")
+thumbsMobile.foreach {
+  case Right(f) => println(s"  - ${f.getName}")
+  case Left(err) => println(s"  - Error: $err")
+}
 
-  //now placeholders
-  val placeholders = Utils.generatePlaceholders(
-    number = 3,
-    width = 200,
-    height = 200,
-    fillColor = Some(Color.RED),
-    applyBlur = true,
-    outputDir = outputDir
-  )
+//now placeholders
+val placeholders = Utils.generatePlaceholders(
+  number = 3,
+  width = 200,
+  height = 200,
+  fillColor = Some(Color.RED),
+  applyBlur = true,
+  outputDir = outputDir
+)
 
-  placeholders.foreach {
-    case Right(f) => println(s"placeholder generated: ${f.getName}")
-    case Left(err) => println(s"Error: $err")
-  }
+placeholders.foreach {
+  case Right(f) => println(s"placeholder generated: ${f.getName}")
+  case Left(err) => println(s"Error: $err")
+}
 
 //test OCR preprocessing
 images.headOption.foreach { imgFile =>
   println("testing ocr processing...")
-
   val image = ImmutableImage.loader().fromFile(imgFile)
-  val processed = Utils.OCR.prepareOCR(
+  val processed = Utils.OCR.optimize(
     image,
     tilt = 5.0,
     contrastFactor = 1.3,
     threshold = 128,
     doBinarize = true
   )
-
-  val outPath = new File(outputDir, "ocr_processed.webp").getPath
+  val (name,ext) = Common.getNameAndExtension(imgFile.getName)
+  val key  = Common.timestamp
+  val outPath = new File(outputDir, s"${name}_$key${ext.getOrElse("")}").getPath
   processed.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, new File(outPath))
   println(s"OCR processed stored at: $outPath")
-
-  //create a palette from an image
-  val imagePath = "input/wall.jpg"
-  val outputPath = "palette.png"
-  val colorCount = 6
-
-  val result = for {
-    palette <- PaletteMaker.getPalette(imagePath, colorCount)
-    colors   = palette.map(a => (a(0), a(1), a(2))).toList
-    saved   <- PaletteMaker.drawPalette(colors, outputPath)
-  } yield saved
-
-  result match {
-    case Right(_)  => println(s"Palette extracted and saved to $outputPath")
-    case Left(err) => println(s"Error extracting palette: ${err.getMessage}")
-  }
-  
-
+}
 ````
  ### color examples
 ```scala
