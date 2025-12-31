@@ -42,6 +42,16 @@ object Utils {
     val writer: PngWriter = PngWriter.NoCompression
   }
 
+  sealed trait ThumbType {
+    def deviceName: String
+  }
+  case object Mobile extends ThumbType{
+    val deviceName = "mobile"
+  }
+  case object Desktop extends ThumbType{
+    val deviceName = "destkop"
+  }
+
   /** List all supported image files in a folder.
    *
    * @param inputDir the folder to scan for image files
@@ -84,10 +94,10 @@ object Utils {
    * @param thumbType "desktop" or "mobile"
    * @return Either an error message or the thumbnail File
    */
-  def createThumbnail(inputFile: File, outputDir: File, thumbType: String): Either[String, File] =
+  def createThumbnail(inputFile: File, outputDir: File, thumbType: ThumbType): Either[String, File] =
     Try {
       val image = ImmutableImage.loader().fromFile(inputFile)
-      val scaled = thumbType match {
+      val scaled = thumbType.deviceName match {
         case "desktop" => image.scaleTo(300, 300)
         case "mobile" => image.scaleTo(150, 150)
       }
@@ -103,7 +113,7 @@ object Utils {
    * @param thumbType  "desktop" or "mobile"
    * @return sequence of Either[String, File]
    */
-  def createThumbnail(inputFiles: Seq[File], outputDir: File, thumbType: String): Seq[Either[String, File]] =
+  def createThumbnail(inputFiles: Seq[File], outputDir: File, thumbType: ThumbType): Seq[Either[String, File]] =
     inputFiles.map(createThumbnail(_, outputDir, thumbType))
 
   /** Generates a series of placeholder images safely.

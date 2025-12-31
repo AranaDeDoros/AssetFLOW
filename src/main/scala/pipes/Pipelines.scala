@@ -4,8 +4,9 @@ import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
 import web.common.Common
 import web.utils.Utils
-import web.utils.Utils.ImageFormat
+import web.utils.Utils.{ImageFormat, ThumbType}
 import web.utils.Utils.OCR.ContrastLevel
+
 import java.io.File
 import scala.util.Try
 
@@ -43,7 +44,7 @@ final class AssetPipeline private(
       }
     )
 
-  def thumbnails(kind: String): AssetPipeline =
+  def thumbnails(kind: ThumbType): AssetPipeline =
     new AssetPipeline(
       inputDir,
       outputDir,

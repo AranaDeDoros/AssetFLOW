@@ -1,5 +1,5 @@
 import web.utils.Utils
-import web.utils.Utils.Webp
+import web.utils.Utils.{Desktop, Mobile, Webp}
 
 import java.awt.Color
 import java.io.File
@@ -34,7 +34,7 @@ class ImageUtilsTests extends munit.FunSuite {
 
 
   test("desktop thumbnails created successfully") {
-    val thumbs = Utils.createThumbnail(images, outputDir, "desktop")
+    val thumbs = Utils.createThumbnail(images, outputDir, Desktop)
 
     val okFiles = thumbs.collect { case Right(f) => f }
     val errors  = thumbs.collect { case Left(e) => e }
@@ -45,7 +45,7 @@ class ImageUtilsTests extends munit.FunSuite {
 
 
   test("mobile thumbnails created successfully") {
-    val thumbs = Utils.createThumbnail(images, outputDir, "mobile")
+    val thumbs = Utils.createThumbnail(images, outputDir, Mobile)
 
     val okFiles = thumbs.collect { case Right(f) => f }
     val errors  = thumbs.collect { case Left(e) => e }

@@ -23,12 +23,12 @@ color manipulation, and OCR preprocessing; using a **functional approach**.
 
 ##  Tech Stack
 
-| Component      | Description                               |
-|----------------|-------------------------------------------|
-| **Scala**      | Functional programming language           |
-| **Scrimage**   | Image manipulation library                |
-| **Java AWT**   | For color handling and basic graphics     |
-| **ColorThief** | Aids in the palette extract functionality |
+| Component      | Description                                  |
+|----------------|----------------------------------------------|
+| **Scala**      | Functional programming language              |
+| **Scrimage**   | Image manipulation library                   |
+| **Java AWT**   | For color handling and basic graphics        |
+| **ColorThief** | Aids in the palette extraction functionality |
 
 ---
 ### "pipeline" helpers

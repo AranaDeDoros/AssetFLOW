@@ -8,7 +8,7 @@ import web.common.Common
 import web.guidelines.{BackgroundImage, HeroImage, WebsiteImageType}
 import web.utils.Utils
 import web.utils.Utils.OCR.ContrastLevel.Normal
-import web.utils.Utils.{PaletteMaker, Webp}
+import web.utils.Utils.{Desktop, Mobile, PaletteMaker, Webp}
 
 import java.awt.Color
 import java.io.File
@@ -50,8 +50,8 @@ object Main extends App {
   }
 
   //making thumbnails
-  val thumbsDesktop = Utils.createThumbnail(images, outputDir, "desktop")
-  val thumbsMobile = Utils.createThumbnail(images, outputDir, "mobile")
+  val thumbsDesktop = Utils.createThumbnail(images, outputDir, Desktop)
+  val thumbsMobile = Utils.createThumbnail(images, outputDir, Mobile)
 
   println("Thumbnails desktop:")
   thumbsDesktop.foreach {
