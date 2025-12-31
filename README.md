@@ -1,8 +1,10 @@
-# 🖼️ ScalaFLOW
+# AssetFLOW
+<p align="center"><img height="500" alt="assetflow2"
+src="https://github.com/user-attachments/assets/185054c9-caea-4228-8fe9-d4165e1915ab" /></p>
 
 A lightweight, functional-oriented image processing toolkit written in **Scala**, designed for **web development** workflows.
 
-This project demonstrates how to handle image transformations like conversion to WebP, thumbnail generation, 
+This library handles image transformations like conversion to WebP, thumbnail generation, 
 color manipulation, and OCR preprocessing; using a **functional approach**.
 
 ---
@@ -29,7 +31,7 @@ color manipulation, and OCR preprocessing; using a **functional approach**.
 | **ColorThief** | Aids in the palette extract functionality |
 
 ---
-### pipeline helpers
+### "pipeline" helpers
 ````scala
 
 //batch pipe, 
@@ -197,5 +199,8 @@ product_thumbnail    300x300              150x150              1:1
 
 square logo found guidelines for desktop: 100x100  for mobile: 60x60, ratio=1:1
 ```
+# TODO #
+- [ ] Add a true Asset pipeline.
+
 # Docs #
 [Here (WIP)](https://aranadedoros.github.io/scala-web-image-toolkit/)
