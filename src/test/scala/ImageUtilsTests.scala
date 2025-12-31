@@ -1,4 +1,5 @@
 import web.utils.Utils
+import web.utils.Utils.Webp
 
 import java.awt.Color
 import java.io.File
@@ -24,7 +25,7 @@ class ImageUtilsTests extends munit.FunSuite {
   }
 
   test("convert images to WebP successfully") {
-    val results = Utils.convertToWebp(images, outputDir)
+    val results = Utils.convertTo(images, outputDir,Webp)
 
     val errors = results.collect { case Left(err) => err }
 

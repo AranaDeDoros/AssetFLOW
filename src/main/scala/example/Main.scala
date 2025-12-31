@@ -3,15 +3,35 @@ package example
 import coloring._
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
+import pipes.{AssetPipeline, OCRPipeline}
+import web.common.Common
 import web.guidelines.{BackgroundImage, HeroImage, WebsiteImageType}
 import web.utils.Utils
-import web.utils.Utils.PaletteMaker
+import web.utils.Utils.OCR.ContrastLevel.Normal
+import web.utils.Utils.{PaletteMaker, Webp}
 
 import java.awt.Color
 import java.io.File
 
 
 object Main extends App {
+
+//  AssetPipeline
+//    .from("input")
+//    .outputTo("output")
+//    .convertTo(Webp)
+//    .thumbnails("desktop")
+//    .run()
+//
+//  OCRPipeline
+//    .from("input")
+//    .outputTo("output")
+//    .contrast(Normal)
+//    .grayscale()
+//    .optimize(5.0, 1.3)
+//    .rotate(1)
+//    .run()
+
   //folders setup
   val inputDir = new File("input")
   val outputDir = new File("output")
@@ -23,7 +43,7 @@ object Main extends App {
   images.foreach(f => println(s"  - ${f.getName}"))
 
   //converting to webp
-  val webpResults = Utils.convertToWebp(images, outputDir)
+  val webpResults = Utils.convertTo(images, outputDir,Webp)
   webpResults.foreach {
     case Right(f) => println(s"WebP at: ${f.getName}")
     case Left(err) => println(s"Error: $err")
@@ -63,21 +83,20 @@ object Main extends App {
   //test OCR preprocessing
   images.headOption.foreach { imgFile =>
     println("testing ocr processing...")
-
     val image = ImmutableImage.loader().fromFile(imgFile)
-    val processed = Utils.OCR.prepareOCR(
+    val processed = Utils.OCR.optimize(
       image,
       tilt = 5.0,
       contrastFactor = 1.3,
       threshold = 128,
       doBinarize = true
     )
-
-    val outPath = new File(outputDir, "ocr_processed.webp").getPath
+    val (name,ext) = Common.getNameAndExtension(imgFile.getName)
+    val key  = Common.timestamp
+    val outPath = new File(outputDir, s"${name}_$key${ext.getOrElse("")}").getPath
     processed.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, new File(outPath))
     println(s"OCR processed stored at: $outPath")
   }
-
   println(" complete ")
 
   println("=== color tests ===")

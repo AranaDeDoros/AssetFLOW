@@ -3,7 +3,7 @@ package web.utils
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.angles.Radians
 import com.sksamuel.scrimage.filter.{BlurFilter, GrayscaleFilter}
-import com.sksamuel.scrimage.nio.{JpegWriter, PngWriter}
+import com.sksamuel.scrimage.nio.{ImageWriter, JpegWriter, PngWriter}
 import com.sksamuel.scrimage.webp.WebpWriter
 import de.androidpit.colorthief.ColorThief
 
@@ -20,7 +20,27 @@ import scala.util.Try
  */
 object Utils {
 
-  private val supportedExts = Set("png", "jpg", "jpeg", "gif", "bmp")
+  private val supportedExts = Set("png", "jpg", "jpeg")
+
+  sealed trait ImageFormat {
+    def extension: String
+    def writer: ImageWriter
+  }
+
+  case object Webp extends ImageFormat {
+    val extension = ".webp"
+    val writer: WebpWriter = WebpWriter.MAX_LOSSLESS_COMPRESSION
+  }
+
+  case object Jpeg extends ImageFormat {
+    val extension = ".jpeg"
+    val writer: JpegWriter = JpegWriter.Default
+  }
+
+  case object Png extends ImageFormat {
+    val extension = ".png"
+    val writer: PngWriter = PngWriter.NoCompression
+  }
 
   /** List all supported image files in a folder.
    *
@@ -36,13 +56,14 @@ object Utils {
    *
    * @param inputFile the image file to convert
    * @param outputDir folder to save the converted image
+   * @param format image writer
    * @return Either an error message or the output File
    */
-  def convertToWebp(inputFile: File, outputDir: File): Either[String, File] =
+  def convertTo(inputFile: File, outputDir: File, format:  ImageFormat): Either[String, File] =
     Try {
       val image = ImmutableImage.loader().fromFile(inputFile)
-      val outputFile = new File(outputDir, inputFile.getName.replaceAll("\\.[^.]+$", ".webp"))
-      image.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, outputFile)
+      val outputFile = new File(outputDir, inputFile.getName.replaceAll("\\.[^.]+$", format.extension))
+      image.output(format.writer, outputFile)
       outputFile
     }.toEither.left.map(ex => s"Error converting ${inputFile.getName}: ${ex.getMessage}")
 
@@ -50,10 +71,11 @@ object Utils {
    *
    * @param inputFiles list of image files
    * @param outputDir  folder to save converted images
+   * @param format image writer
    * @return sequence of Either[String, File]
    */
-  def convertToWebp(inputFiles: Seq[File], outputDir: File): Seq[Either[String, File]] =
-    inputFiles.map(convertToWebp(_, outputDir))
+  def convertTo(inputFiles: Seq[File], outputDir: File,format: ImageFormat ): Seq[Either[String, File]] =
+    inputFiles.map(file => convertTo(file, outputDir,format))
 
   /** Generate a thumbnail for a single image safely.
    *
@@ -244,30 +266,58 @@ object Utils {
       if (radians != 0.0) image.rotate(new Radians(radians)) else image
 
 
-
     /** Performs a complete preprocessing pipeline for OCR:
      * rotation correction, grayscale conversion, contrast adjustment,
      * and optional binarization.
      *
-     * @param image          the input image
+     * @param input          the input image
      * @param tilt           rotation angle in degrees (default: 0.0)
      * @param contrastFactor contrast multiplier (default: 1.4)
      * @param threshold      threshold for binarization (default: 128)
      * @param doBinarize     whether to perform binarization (default: true)
      * @return the processed [[ImmutableImage]] ready for OCR
      */
-    def prepareOCR(
-                    image: ImmutableImage,
-                    tilt: Double = 0.0,
-                    contrastFactor: Double = 1.4,
-                    threshold: Int = 128,
-                    doBinarize: Boolean = true
+    def optimize(
+                    input: ImmutableImage,
+                    tilt: Double ,
+                    contrastFactor: Double ,
+                    threshold: Int ,
+                    doBinarize: Boolean
                   ): ImmutableImage = {
-      val rotated = rotate(image, tilt)
+      val rotated = rotate(input, tilt)
       val gray = grayscale(rotated)
       val factor = ContrastLevel.fromFactor(contrastFactor)
       val contrasted = contrast(gray, factor)
       if (doBinarize) binarize(contrasted, threshold) else contrasted
+    }
+
+    /** Performs a complete preprocessing pipeline for OCR:
+     * rotation correction, grayscale conversion, contrast adjustment,
+     * and optional binarization.
+     *
+     * @param input          the input images
+     * @param tilt           rotation angle in degrees (default: 0.0)
+     * @param contrastFactor contrast multiplier (default: 1.4)
+     * @param threshold      threshold for binarization (default: 128)
+     * @param doBinarize     whether to perform binarization (default: true)
+     * @return the processed [Seq[[ImmutableImage]]] ready for OCR
+     */
+    def optimize(
+                    input: Seq[ImmutableImage],
+                    tilt: Double,
+                    contrastFactor: Double ,
+                    threshold: Int,
+                    doBinarize: Boolean
+                  ): Seq[ImmutableImage] = {
+      input.map{
+        img => {
+          val rotated = rotate(img, tilt)
+          val gray = grayscale(rotated)
+          val factor = ContrastLevel.fromFactor(contrastFactor)
+          val contrasted = contrast(gray, factor)
+          if (doBinarize) binarize(contrasted, threshold) else contrasted
+        }
+      }
     }
 
     /** Saves an image to disk in JPEG format with adjustable compression quality.
