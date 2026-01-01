@@ -38,6 +38,9 @@ jobs:
     - name: Generate docs
       run: sbt doc
 
+    - name: Build JAR
+      run: sbt package
+
     - name: Publish GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
