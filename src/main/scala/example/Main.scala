@@ -3,7 +3,7 @@ package example
 import coloring._
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
-import pipes.{AssetPipeline, OCRPipeline}
+import pipes.{AssetBatch, OCRPipeline}
 import web.common.Common
 import web.guidelines.{BackgroundImage, HeroImage, WebsiteImageType}
 import web.utils.Utils
@@ -16,21 +16,21 @@ import java.io.File
 
 object Main extends App {
 
-//  AssetPipeline
-//    .from("input")
-//    .outputTo("output")
-//    .convertTo(Webp)
-//    .thumbnails(Desktop)
-//    .run()
-//
-//  OCRPipeline
-//    .from("input")
-//    .outputTo("output")
-//    .contrast(Normal)
-//    .grayscale()
-//    .optimize(5.0, 1.3)
-//    .rotate(1)
-//    .run()
+  //  AssetBatch
+  //    .from("input")
+  //    .outputTo("output")
+  //    .convertTo(Webp)
+  //    .thumbnails(Desktop)
+  //    .run()
+  //
+  //  OCRPipeline
+  //    .from("input")
+  //    .outputTo("output")
+  //    .contrast(Normal)
+  //    .grayscale()
+  //    .optimize(5.0, 1.3)
+  //    .rotate(1)
+  //    .run()
 
   //folders setup
   val inputDir = new File("input")
@@ -43,7 +43,7 @@ object Main extends App {
   images.foreach(f => println(s"  - ${f.getName}"))
 
   //converting to webp
-  val webpResults = Utils.convertTo(images, outputDir,Webp)
+  val webpResults = Utils.convertTo(images, outputDir, Webp)
   webpResults.foreach {
     case Right(f) => println(s"WebP at: ${f.getName}")
     case Left(err) => println(s"Error: $err")
@@ -91,8 +91,8 @@ object Main extends App {
       threshold = 128,
       doBinarize = true
     )
-    val (name,ext) = Common.getNameAndExtension(imgFile.getName)
-    val key  = Common.timestamp
+    val (name, ext) = Common.getNameAndExtension(imgFile.getName)
+    val key = Common.timestamp
     val outPath = new File(outputDir, s"${name}_$key${ext.getOrElse("")}").getPath
     processed.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, new File(outPath))
     println(s"OCR processed stored at: $outPath")
@@ -169,12 +169,12 @@ object ColorThiefPalettes {
 
     val result = for {
       palette <- PaletteMaker.getPalette(imagePath, colorCount)
-      colors   = palette.map(a => (a(0), a(1), a(2))).toList
-      saved   <- PaletteMaker.drawPalette(colors, outputPath)
+      colors = palette.map(a => (a(0), a(1), a(2))).toList
+      saved <- PaletteMaker.drawPalette(colors, outputPath)
     } yield saved
 
     result match {
-      case Right(_)  => println(s"Palette extracted and saved to $outputPath")
+      case Right(_) => println(s"Palette extracted and saved to $outputPath")
       case Left(err) => println(s"Error extracting palette: ${err.getMessage}")
     }
   }

@@ -1,5 +1,5 @@
 # AssetFLOW
-<p align="center"><img height="500" alt="assetflow2"
+<p align="center"><img height="500" alt="assetflow"
 src="https://github.com/user-attachments/assets/185054c9-caea-4228-8fe9-d4165e1915ab" /></p>
 
 A lightweight, functional-oriented image processing toolkit written in **Scala**, designed for **web development** workflows.
@@ -37,7 +37,7 @@ color manipulation, and OCR preprocessing; using a **functional approach**.
 //batch pipe, 
 // different ops upon same input assets
 // independent results
-AssetPipeline
+AssetBatch
   .from("input")
   .outputTo("output")
   .convertTo(Webp)
