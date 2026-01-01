@@ -29,7 +29,7 @@ object Common {
   }
 
   def timestamp : String =  {
-    Instant.now().toString
+    Instant.now().toEpochMilli.toString
   }
 
   def today: String = {
