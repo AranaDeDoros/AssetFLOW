@@ -58,6 +58,7 @@ package object pipes {
                                   steps: Vector[BatchStep]
                                 ) extends IndependentPipe {
 
+    def stepsNumber: Int = steps.size
     def outputTo(path: String): AssetBatch =
       new AssetBatch(inputDir, Some(new File(path)), steps)
 
@@ -126,6 +127,8 @@ package object pipes {
                                    outputDir: Option[File],
                                    steps: Vector[TransformStep]
                                  ) extends TransformationPipe {
+
+    def stepsNumber: Int = steps.size
 
     def outputTo(path: String): OCRPipeline =
       new OCRPipeline(inputDir, Some(new File(path)), steps)
@@ -220,7 +223,7 @@ package object pipes {
     override def rename(out: File, img: File, processed: ImmutableImage): File = {
       val (name, ext) = Common.getNameAndExtension(img.getName)
       val key = Common.timestamp //Instant.now().toString
-      val outPath = new File(out, s"${name}_$key${ext.getOrElse("")}").getPath
+      val outPath = new File(out, s"${name}_$key.${ext.getOrElse("")}").getPath
       processed.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, new File(outPath))
     }
 
