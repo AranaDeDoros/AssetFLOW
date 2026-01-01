@@ -1,22 +1,26 @@
 import Dependencies.*
 
-import scala.collection.Seq
-
 ThisBuild / scalaVersion     := "2.13.16"
 ThisBuild / version          := "0.8.0"
 ThisBuild / organization     := "com.aranadedoros"
 ThisBuild / organizationName := "aranadedoros"
+
 Compile / doc / scalacOptions ++= Seq(
   "-skip-packages", "example"
 )
+Compile / packageBin / mappings := {
+  val original = (Compile / packageBin / mappings).value
+  original.filterNot { case (_, pathInJar) =>
+    pathInJar.startsWith("main/")
+  }
+}
 
 lazy val scrimageVersion = "4.0.31"
 resolvers += Resolver.mavenCentral
 
 lazy val root = (project in file("."))
   .settings(
-    name := "asset-flow",
-
+    name := "AssetFlow",
     libraryDependencies ++= Seq(
       munit % Test,
       "com.sksamuel.scrimage" % "scrimage-core" % scrimageVersion,
@@ -27,5 +31,3 @@ lazy val root = (project in file("."))
        "org.scala-lang" % "scala-reflect" % scalaVersion.value
     )
   )
-
-// See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
