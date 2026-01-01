@@ -222,8 +222,8 @@ package object pipes {
 
     override def rename(out: File, img: File, processed: ImmutableImage): File = {
       val (name, ext) = Common.getNameAndExtension(img.getName)
-      val key = Common.timestamp //Instant.now().toString
-      val outPath = new File(out, s"${name}_$key.${ext.getOrElse("")}").getPath
+      val key = "" //s"_Common.timestamp"
+      val outPath = new File(out, s"${name}$key.${ext.getOrElse("")}").getPath
       processed.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, new File(outPath))
     }
 
