@@ -10,7 +10,7 @@ import scala.util.Try
 
 package object pipes {
 
-  private[Pipes] def prepareIO(
+  private[pipes] def prepareIO(
                                 inputDir: Option[File],
                                 outputDir: Option[File]
                               ): (Seq[File], File) = {
