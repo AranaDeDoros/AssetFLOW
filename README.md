@@ -203,4 +203,4 @@ square logo found guidelines for desktop: 100x100  for mobile: 60x60, ratio=1:1
 - [ ] Add a true Asset pipeline.
 
 # Docs #
-[Here (WIP)](https://aranadedoros.github.io/scala-web-image-toolkit/)
+[Here (WIP)](https://aranadedoros.github.io/AssetFLOW/)
