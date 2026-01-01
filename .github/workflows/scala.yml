@@ -1,14 +1,11 @@
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
 name: Scala CI
 
 on:
   workflow_dispatch:
   push:
     branches: [ "master" ]
+    tags:
+      - "v*"
   pull_request:
     branches: [ "master" ]
 
@@ -40,6 +37,18 @@ jobs:
 
     - name: Generate docs
       run: sbt doc
+
+    - name: Publish GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v2
+      with:
+        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+        generate_release_notes: true
+        files: |
+          target/scala-*/**/*.jar
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Deploy docs to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
