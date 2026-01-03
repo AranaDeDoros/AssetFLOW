@@ -3,12 +3,10 @@ package example
 import coloring._
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
-import pipes.{AssetBatch, OCRPipeline}
 import web.common.Common
 import web.guidelines.{BackgroundImage, HeroImage, WebsiteImageType}
-import web.utils.Utils
-import web.utils.Utils.OCR.ContrastLevel.Normal
-import web.utils.Utils.{Desktop, Mobile, PaletteMaker, Webp}
+import web.utils.ImageTransforms.{Desktop, Mobile, Webp}
+import web.utils.{ImageTransforms, OCR, PaletteMaker}
 
 import java.awt.Color
 import java.io.File
@@ -38,20 +36,20 @@ object Main extends App {
   outputDir.mkdirs()
 
   //listing images
-  val images = Utils.listImages(inputDir)
+  val images = ImageTransforms.listImages(inputDir)
   println(s" ${images.size} found ${inputDir.getPath}:")
   images.foreach(f => println(s"  - ${f.getName}"))
 
   //converting to webp
-  val webpResults = Utils.convertTo(images, outputDir, Webp)
+  val webpResults = ImageTransforms.convertTo(images, outputDir, Webp)
   webpResults.foreach {
     case Right(f) => println(s"WebP at: ${f.getName}")
     case Left(err) => println(s"Error: $err")
   }
 
   //making thumbnails
-  val thumbsDesktop = Utils.createThumbnail(images, outputDir, Desktop)
-  val thumbsMobile = Utils.createThumbnail(images, outputDir, Mobile)
+  val thumbsDesktop = ImageTransforms.createThumbnail(images, outputDir, Desktop)
+  val thumbsMobile = ImageTransforms.createThumbnail(images, outputDir, Mobile)
 
   println("Thumbnails desktop:")
   thumbsDesktop.foreach {
@@ -66,7 +64,7 @@ object Main extends App {
   }
 
   //now placeholders
-  val placeholders = Utils.generatePlaceholders(
+  val placeholders = ImageTransforms.generatePlaceholders(
     number = 3,
     width = 200,
     height = 200,
@@ -84,7 +82,7 @@ object Main extends App {
   images.headOption.foreach { imgFile =>
     println("testing ocr processing...")
     val image = ImmutableImage.loader().fromFile(imgFile)
-    val processed = Utils.OCR.optimize(
+    val processed = OCR.optimize(
       image,
       tilt = 5.0,
       contrastFactor = 1.3,
@@ -140,7 +138,7 @@ object Main extends App {
   println("=== WebsiteImageType tests ===")
 
   //list available images and its guidelines
-  println("Resumen de imágenes:")
+  println("images summary:")
   WebsiteImageType.summary()
 
   //testing specific types

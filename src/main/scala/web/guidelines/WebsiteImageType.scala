@@ -131,7 +131,6 @@ case class ProductThumbnail(
 
 object WebsiteImageType {
 
-  /** Lista con todos los tipos de imagen disponibles */
   lazy val all: Seq[WebsiteImageType] =  Seq(
     BackgroundImage(),
     HeroImage(),
@@ -145,11 +144,10 @@ object WebsiteImageType {
     ThumbnailImage(),
     ProductThumbnail())
 
-  /** Búsqueda por nombre (case-insensitive) */
+  /** case-insensitive by name */
   def fromName(name: String): Option[WebsiteImageType] =
     all.find(_.name.equalsIgnoreCase(name))
 
-  /** Muestra tabla resumen */
   def summary(): Unit = {
     println(f"${"Type"}%-20s ${"Desktop (WxH)"}%-20s ${"Mobile (WxH)"}%-20s ${"Ratio"}")
     println("-" * 70)
@@ -161,21 +159,9 @@ object WebsiteImageType {
     }
   }
 
-  ///////////
 
 }
 
-object Test extends App {
-  //  print(WebsiteImageType.all)
-  //  WebsiteImageType.all.foreach { img =>
-  //    println(f"${img.name}%-20s ${img.desktop.width}x${img.desktop.height}  ratio=${img.ratio}")
-  //  }
-  val bi = BackgroundImage()
-  println(s"ratio: ${bi.ratio} " +
-    s"desktop: ${bi.desktop} " +
-    s"mobile: ${bi.mobile}")
-
-}
 
 
 

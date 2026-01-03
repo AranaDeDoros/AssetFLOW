@@ -1,15 +1,16 @@
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.webp.WebpWriter
 import web.common.Common
-import web.utils.Utils
-import web.utils.Utils.{ImageFormat, ThumbType}
-import web.utils.Utils.OCR.ContrastLevel
+import web.utils.{ImageTransforms, OCR}
+import web.utils.ImageTransforms.{ImageFormat, ThumbType, TransformationResult}
+import web.utils.OCR.ContrastLevel
 
 import java.io.File
 import scala.util.Try
-
+//to be refactored to create an abstraction to create pipelines or batch processes
 package object pipes {
-
+  private type BatchStep = (Seq[File], File) => Seq[TransformationResult]
+  private type TransformStep = (Seq[File], File) => Seq[File]
   private[pipes] def prepareIO(
                                 inputDir: Option[File],
                                 outputDir: Option[File]
@@ -20,28 +21,24 @@ package object pipes {
 
     out.mkdirs()
 
-    val images = Utils.listImages(in)
+    val images = ImageTransforms.listImages(in)
     (images, out)
   }
 
-  private type BatchStep = (Seq[File], File) => Seq[Either[String, File]]
-  private type TransformStep = (Seq[File], File) => Seq[File]
+
 
   trait Pipe {
     def inspect(f: Seq[File] => Unit): Pipe
-
     def dryRun(): Unit
   }
 
   trait IndependentPipe extends Pipe {
-    def run(): Seq[Either[String, File]]
+    def run(): Seq[TransformationResult]
   }
 
   trait TransformationPipe extends Pipe {
     def rename(out: File, img: File, processed: ImmutableImage): File
-
     def run(): Seq[File]
-
   }
 
   /**
@@ -67,7 +64,7 @@ package object pipes {
         inputDir,
         outputDir,
         steps :+ { (images, out) =>
-          Utils.convertTo(images, out, format)
+          ImageTransforms.convertTo(images, out, format)
         }
       )
 
@@ -76,11 +73,11 @@ package object pipes {
         inputDir,
         outputDir,
         steps :+ { (images, out) =>
-          Utils.createThumbnail(images, out, kind)
+          ImageTransforms.createThumbnail(images, out, kind)
         }
       )
 
-    override def run(): Seq[Either[String, File]] = {
+    override def run(): Seq[TransformationResult] = {
       val (images, out) = prepareIO(inputDir, outputDir)
       steps.flatMap(step => step(images, out))
     }
@@ -98,7 +95,7 @@ package object pipes {
 
     override def dryRun(): Unit = {
       val in = inputDir.getOrElse(sys.error("Input dir not set"))
-      val images = Utils.listImages(in)
+      val images = ImageTransforms.listImages(in)
       println(s"Would process ${images.size} images with ${steps.size} steps")
     }
 
@@ -141,7 +138,7 @@ package object pipes {
           images.flatMap { img =>
             Try {
               val image = ImmutableImage.loader().fromFile(img)
-              val processed = Utils.OCR.grayscale(image)
+              val processed = OCR.grayscale(image)
               rename(out, img, processed)
             }.toOption
           }
@@ -157,7 +154,7 @@ package object pipes {
           images.flatMap { img =>
             Try {
               val image = ImmutableImage.loader().fromFile(img)
-              val processed = Utils.OCR.binarize(image, threshold)
+              val processed = OCR.binarize(image, threshold)
               rename(out, img, processed)
             }.toOption
           }
@@ -173,7 +170,7 @@ package object pipes {
           images.flatMap { img =>
             Try {
               val image = ImmutableImage.loader().fromFile(img)
-              val processed = Utils.OCR.contrast(image, level)
+              val processed = OCR.contrast(image, level)
               rename(out, img, processed)
             }.toOption
           }
@@ -189,7 +186,7 @@ package object pipes {
           images.flatMap { img =>
             Try {
               val image = ImmutableImage.loader().fromFile(img)
-              val processed = Utils.OCR.rotate(image, radians)
+              val processed = OCR.rotate(image, radians)
               rename(out, img, processed)
             }.toOption
           }
@@ -207,7 +204,7 @@ package object pipes {
         images.flatMap { img =>
           Try {
             val image = ImmutableImage.loader().fromFile(img)
-            val processed = Utils.OCR.optimize(
+            val processed = OCR.optimize(
               image,
               tilt,
               contrastFactor,
@@ -247,11 +244,9 @@ package object pipes {
 
     override def dryRun(): Unit = {
       val in = inputDir.getOrElse(sys.error("Input dir not set"))
-      val images = Utils.listImages(in)
+      val images = ImageTransforms.listImages(in)
       println(s"Would process ${images.size} images with ${steps.size} steps")
     }
-
-
   }
 
   /**
