@@ -10,28 +10,26 @@ color manipulation, and OCR preprocessing; using a **functional approach**.
 ---
 
 ## Features
-
 - [x] **Convert images to WebP**
 - [x] **Generate thumbnails** for desktop and mobile
 - [x] **Create blurred placeholders** for skeletons, templating, etc.
 - [x] **Perform OCR preprocessing** (binarization, tilt, contrast, etc.)
 - [x] **Manipulate and blend colors** functionally
 - [x] **Follow common web image type guidelines**
-- [x] **Pipeline-like processing helpers.** 
-
 ---
 
-##  Tech Stack
-
+## Stack
 | Component      | Description                                  |
 |----------------|----------------------------------------------|
-| **Scala**      | Functional programming language              |
+| **Scala 2.13** | Host language.                               |
 | **Scrimage**   | Image manipulation library                   |
 | **Java AWT**   | For color handling and basic graphics        |
 | **ColorThief** | Aids in the palette extraction functionality |
 
 ---
 ### "pipeline" helpers
+> to be removed in favour of abstractions, perhaps
+
 ````scala
 
 //batch pipe, 
@@ -60,26 +58,26 @@ OCRPipeline
 
 ### image creation
 ````scala
- //folders setup
+  //folders setup
 val inputDir = new File("input")
 val outputDir = new File("output")
 outputDir.mkdirs()
 
 //listing images
-val images = Utils.listImages(inputDir)
+val images = ImageTransforms.listImages(inputDir)
 println(s" ${images.size} found ${inputDir.getPath}:")
 images.foreach(f => println(s"  - ${f.getName}"))
 
 //converting to webp
-val webpResults = Utils.convertTo(images, outputDir)
+val webpResults = ImageTransforms.convertTo(images, outputDir, Webp)
 webpResults.foreach {
   case Right(f) => println(s"WebP at: ${f.getName}")
   case Left(err) => println(s"Error: $err")
 }
 
 //making thumbnails
-val thumbsDesktop = Utils.createThumbnail(images, outputDir, Desktop)
-val thumbsMobile = Utils.createThumbnail(images, outputDir, Mobile)
+val thumbsDesktop = ImageTransforms.createThumbnail(images, outputDir, Desktop)
+val thumbsMobile = ImageTransforms.createThumbnail(images, outputDir, Mobile)
 
 println("Thumbnails desktop:")
 thumbsDesktop.foreach {
@@ -94,7 +92,7 @@ thumbsMobile.foreach {
 }
 
 //now placeholders
-val placeholders = Utils.generatePlaceholders(
+val placeholders = ImageTransforms.generatePlaceholders(
   number = 3,
   width = 200,
   height = 200,
@@ -112,15 +110,15 @@ placeholders.foreach {
 images.headOption.foreach { imgFile =>
   println("testing ocr processing...")
   val image = ImmutableImage.loader().fromFile(imgFile)
-  val processed = Utils.OCR.optimize(
+  val processed = OCR.optimize(
     image,
     tilt = 5.0,
     contrastFactor = 1.3,
     threshold = 128,
     doBinarize = true
   )
-  val (name,ext) = Common.getNameAndExtension(imgFile.getName)
-  val key  = Common.timestamp
+  val (name, ext) = Common.getNameAndExtension(imgFile.getName)
+  val key = Common.timestamp
   val outPath = new File(outputDir, s"${name}_$key${ext.getOrElse("")}").getPath
   processed.output(WebpWriter.MAX_LOSSLESS_COMPRESSION, new File(outPath))
   println(s"OCR processed stored at: $outPath")
@@ -128,25 +126,26 @@ images.headOption.foreach { imgFile =>
 ````
  ### color examples
 ```scala
+//create a color
 val redColor = RGBColor(100, 50, 200)
 println(s"initial color: $redColor, hex=${redColor.toHex}")
 
-// increase channels
+//increase channels
 val brighter = redColor.increaseAll(50, 30, -100)
 println(s"adjusted color: $brighter, hex=${brighter.toHex}")
 
-// mix 'em up
+//mix 'em up
 val blueColor = RGBColor(0, 0, 255)
 val mixed = redColor.mixWith(blueColor, 0.5)
 println(s"50% mix: $mixed, hex=${mixed.toHex}")
 
-// from hex
+//from hex
 val fromHex = RGBColor.fromHex("#ff00cc")
 println(s"from hex '#ff00cc': $fromHex")
 
-// random color
+//random color
 val randomColor = RGBColor.random()
-println(s"random color: $randomColor, hex=${randomColor.toHex}"
+println(s"random color: $randomColor, hex=${randomColor.toHex}")
 
 val cmyk = CMYKColor(20, 40, 60, 10)
 val rgb = RGBColor(100, 150, 200)
@@ -199,8 +198,11 @@ product_thumbnail    300x300              150x150              1:1
 
 square logo found guidelines for desktop: 100x100  for mobile: 60x60, ratio=1:1
 ```
+---
 # TODO #
+- [ ] Create abstractions for creating Pipelines and Batches
 - [ ] Add a true Asset pipeline.
-
+- [ ] Extend image extensions support.
+---
 # Docs #
-[Here (WIP)](https://aranadedoros.github.io/AssetFLOW/)
+[AssetFLOW](https://aranadedoros.github.io/AssetFLOW/)
