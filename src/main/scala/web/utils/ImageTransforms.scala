@@ -60,6 +60,7 @@ object ImageTransforms {
   }
 
   /** List all supported image files in a folder.
+   *
    * @param inputDir the folder to scan for image files
    * @return sequence of valid image files
    */
@@ -69,21 +70,19 @@ object ImageTransforms {
       .filter(f => supportedExtensions.exists(ext => f.getName.toLowerCase.endsWith(ext)))
 
   //GENERATIVE
+
   /** Convert a single image to WebP safely.
+   *
    * @param inputFile the image file to convert
    * @param outputDir folder to save the converted image
    * @param format    image writer
    * @return Either an error message or the output File
    */
   def convertTo(inputFile: File, outputDir: File, format: ImageFormat): TransformationResult =
-    Try {
-      val image = ImmutableImage.loader().fromFile(inputFile)
-      val outputFile = new File(outputDir, inputFile.getName.replaceAll("\\.[^.]+$", format.extension))
-      image.output(format.writer, outputFile)
-      outputFile
-    }.toEither.left.map(ex => TransformationError(s"Error converting ${inputFile.getName}: ${ex.getMessage}"))
+    writeAs(inputFile, outputDir, format)
 
   /** Convert a list of images to WebP safely.
+   *
    * @param inputFiles list of image files
    * @param outputDir  folder to save converted images
    * @param format     image writer
@@ -93,6 +92,7 @@ object ImageTransforms {
     inputFiles.map(file => convertTo(file, outputDir, format))
 
   /** Generate a thumbnail for a single image safely.
+   *
    * @param inputFile the image file
    * @param outputDir folder to save thumbnail
    * @param thumbType "desktop" or "mobile"
@@ -111,6 +111,7 @@ object ImageTransforms {
     }.toEither.left.map(ex => TransformationError(s"Error creating thumbnail ${inputFile.getName}: ${ex.getMessage}"))
 
   /** Generate thumbnails for a list of images safely.
+   *
    * @param inputFiles list of image files
    * @param outputDir  folder to save thumbnails
    * @param thumbType  "desktop" or "mobile"
@@ -120,6 +121,7 @@ object ImageTransforms {
     inputFiles.map(createThumbnail(_, outputDir, thumbType))
 
   /** Generates a series of placeholder images safely.
+   *
    * @param number    the number of placeholder images to generate
    * @param width     width of each image
    * @param height    height of each image
@@ -148,6 +150,7 @@ object ImageTransforms {
     }
 
   /** Removes all metadata from an image and saves it as a clean PNG safely.
+   *
    * @param inputFile  the image file to process
    * @param outputFile destination file for stripped image
    * @return TransformationResult
@@ -160,24 +163,28 @@ object ImageTransforms {
     }.toEither.left.map(ex => TransformationError(s"Error stripping metadata for ${inputFile.getName}: ${ex.getMessage}"))
 
   //TRANSFORMABLE to be refactored for pipes
+
   /** Automatically crops an image, optionally using a color as the background reference, safely.
-   * @param image  immutable image
-   * @param bgColor    optional Color used as background
+   *
+   * @param image   immutable image
+   * @param bgColor optional Color used as background
    * @return TransformationResult
    */
-  def autoCrop(image: ImmutableImage,bgColor: Option[Color] = None) : ImmutableImage = {
-      bgColor match {
-        case Some(color) => image.autocrop(color)
-        case _ => image
-      }
+  def autoCrop(image: ImmutableImage, bgColor: Option[Color] = None): ImmutableImage = {
+    bgColor match {
+      case Some(color) => image.autocrop(color)
+      case _ => image
+    }
   }
+
   /** Automatically crops an image, optionally using a color as the background reference, safely.
+   *
    * @param inputFile  the input file to crop
    * @param outputFile the destination file
    * @param bgColor    optional Color used as background
    * @return TransformationResult
    */
-  def autoCrop(inputFile: File, outputFile: File, bgColor: Option[Color] ): TransformationResult =
+  def autoCrop(inputFile: File, outputFile: File, bgColor: Option[Color]): TransformationResult =
     Try {
       val image = ImmutableImage.loader().fromFile(inputFile)
       val cropped = autoCrop(image, bgColor)
@@ -186,209 +193,210 @@ object ImageTransforms {
     }.toEither.left.map(ex => TransformationError(s"Error auto-cropping ${inputFile.getName}: ${ex.getMessage}"))
 
   //2026
-    sealed trait Axis
-    case object Horizontal extends Axis
-    case object Vertical extends Axis
+  sealed trait Axis
 
-    /**
-     * If the source image is larger, it will be scaled down, maintaining aspect ratio.
-     * If the source image is smaller, it will be returned unmodified.
-     * @param image input
-     * @param dims  Dimension(wxh)
-     * @return bounded image
-     */
-    def bound(image: ImmutableImage, dims: Dimension): ImmutableImage = image.bound(dims.width, dims.height)
+  case object Horizontal extends Axis
 
-    /**
-     * Flips an image
-     * @param image input
-     * @param axis  Horizontal|Vertical
-     * @return flipped image
-     */
-    def flip(image: ImmutableImage, axis: Axis): ImmutableImage =
-      getAxis(image, axis)
+  case object Vertical extends Axis
 
-    /**
-     * Adds a border
-     * @param image input
-     * @param rgb   color
-     * @param thickness border thickness
-     * @return border-padded image
-     */
-    def addBorder(
-                   image: ImmutableImage,
-                   rgb: RGBColor,
-                   thickness: Int
-                 ): ImmutableImage =
-      image.pad(thickness, rgb.color)
+  /**
+   * If the source image is larger, it will be scaled down, maintaining aspect ratio.
+   * If the source image is smaller, it will be returned unmodified.
+   *
+   * @param image input
+   * @param dims  Dimension(wxh)
+   * @return bounded image
+   */
+  def bound(image: ImmutableImage, dims: Dimension): ImmutableImage = image.bound(dims.width, dims.height)
 
-    /**
-     * Scales an image
-     * @param image input
-     * @param factor as double
-     * @return scaled image
-     */
-    def scale(image: ImmutableImage, factor: Double): ImmutableImage = image.scale(factor)
+  /**
+   * Flips an image
+   *
+   * @param image input
+   * @param axis  Horizontal|Vertical
+   * @return flipped image
+   */
+  def flip(image: ImmutableImage, axis: Axis): ImmutableImage =
+    getAxis(image, axis)
 
-    /**
-     * Close up
-     * @param image input
-     * @param factor as double
-     * @return zoomed in image
-     */
-    def zoom(image: ImmutableImage, factor: Double): ImmutableImage = image.zoom(factor)
+  /**
+   * Adds a border
+   *
+   * @param image     input
+   * @param rgb       color
+   * @param thickness border thickness
+   * @return border-padded image
+   */
+  def addBorder(
+                 image: ImmutableImage,
+                 rgb: RGBColor,
+                 thickness: Int
+               ): ImmutableImage =
+    image.pad(thickness, rgb.color)
 
-    //helper
-      private def getAxis(image: ImmutableImage, axis: Axis): ImmutableImage = {
-        axis match {
-          case Horizontal => image.flipX()
-          case Vertical => image.flipY()
-        }
-      }
+  /**
+   * Scales an image
+   *
+   * @param image  input
+   * @param factor as double
+   * @return scaled image
+   */
+  def scale(image: ImmutableImage, factor: Double): ImmutableImage = image.scale(factor)
+
+  /**
+   * Close up
+   *
+   * @param image  input
+   * @param factor as double
+   * @return zoomed in image
+   */
+  def zoom(image: ImmutableImage, factor: Double): ImmutableImage = image.zoom(factor)
+
+  //helper
+  private def getAxis(image: ImmutableImage, axis: Axis): ImmutableImage = {
+    axis match {
+      case Horizontal => image.flipX()
+      case Vertical => image.flipY()
+    }
+  }
 
   //for batch-single
-    /**
-     * If the source image is larger, it will be scaled down, maintaining aspect ratio.
-     * If the source image is smaller, it will be returned unmodified.
-     * @param image input
-     * @param outputDir  output path
-     * @param dim  Dimension(wxh)
-     * @return Either an error message or the output File
-     */
-    def bound(
-               image: File,
-               outputDir: File,
-               dim: Dimension
-             ): TransformationResult = {
-      Try {
-        val img =  ImmutableImage.loader().fromFile(image)
-        val bounded = bound(img,dim)
-        val outputFile = new File(outputDir, image.getName)
-        bounded.output(WebpWriter.DEFAULT, outputFile)
-      }}.toEither.left.map(ex => TransformationError(s"Error bounding ${image.getName}: ${ex.getMessage}"))
 
-    /**
-     * Flips an image
-     * @param image input
-     * @param outputDir  output path
-     * @param axis  Horizontal|Vertical
-     * @return Either an error message or the output File
-     */
-    def flip(
-               image: File,
-               outputDir: File,
-               axis: Axis
-             ): TransformationResult = {
-      Try {
-        val img =  ImmutableImage.loader().fromFile(image)
-        val flipped = getAxis(img, axis)
-        val outputFile = new File(outputDir, image.getName)
-        flipped.output(WebpWriter.DEFAULT, outputFile)
-      }}.toEither.left.map(ex => TransformationError(s"Error flipping ${image.getName}: ${ex.getMessage}"))
+  /**
+   * If the source image is larger, it will be scaled down, maintaining aspect ratio.
+   * If the source image is smaller, it will be returned unmodified.
+   *
+   * @param image     input
+   * @param outputDir output path
+   * @param dim       Dimension(wxh)
+   * @return Either an error message or the output File
+   */
+  def bound(image: File, outputDir: File, dim: Dimension): TransformationResult =
+    withImage(image, outputDir)(img => bound(img, dim),"Error bounding")
 
-    /**
-     * Adds a border
-     * @param image input
-     * @param outputDir  output path
-     * @param rgb   color
-     * @param thickness border thickness
-     * @return Either an error message or the output File
-     */
-    def addBorder(
-                   image: File,
-                   outputDir: File,
-                   rgb: RGBColor,
-                   thickness: Int
-                 ): TransformationResult = {
-      Try {
-        val img =  ImmutableImage.loader().fromFile(image)
-        val bordered = addBorder(img, rgb, thickness)
-        val outputFile = new File(outputDir, image.getName)
-        bordered.output(WebpWriter.DEFAULT, outputFile)
-      }}.toEither.left.map(ex => TransformationError(s"Error adding border ${image.getName}: ${ex.getMessage}"))
+  /**
+   * Flips an image
+   *
+   * @param image     input
+   * @param outputDir output path
+   * @param axis      Horizontal|Vertical
+   * @return Either an error message or the output File
+   */
+  def flip( image: File, outputDir: File, axis: Axis): TransformationResult =
+    withImage(image, outputDir)(img => getAxis(img, axis),"Error flipping")
 
-    /**
-     * Scales an image
-     * @param image input
-     * @param factor as double
-     * @return Either an error message or the output File
-     */
-    def scale(
-                   image: File,
-                   outputDir: File,
-                   factor: Double
-                 ): TransformationResult = {
-      Try {
-        val img =  ImmutableImage.loader().fromFile(image)
-        val scaled = scale(img, factor)
-        val outputFile = new File(outputDir, image.getName)
-        scaled.output(WebpWriter.DEFAULT, outputFile)
-      }}.toEither.left.map(ex => TransformationError(s"Error scaling ${image.getName}: ${ex.getMessage}"))
+  /**
+   * Adds a border
+   *
+   * @param image     input
+   * @param outputDir output path
+   * @param rgb       color
+   * @param thickness border thickness
+   * @return Either an error message or the output File
+   */
+  def addBorder( image: File, outputDir: File, rgb: RGBColor,  thickness: Int): TransformationResult =
+    withImage(image, outputDir)(img => addBorder(img, rgb, thickness),"Error adding border")
 
+  /**
+   * Scales an image
+   *
+   * @param image  input
+   * @param factor as double
+   * @return Either an error message or the output File
+   */
+  def scale( image: File,  outputDir: File,factor: Double): TransformationResult =
+    withImage(image, outputDir)(_.scale(factor),"Error scaling")
 
-    /**
-     * Close up
-     * @param image input
-     * @param factor as double
-     * @return Either an error message or the output File
-     */
-    def zoom(
-                   image: File,
-                   outputDir: File,
-                   factor: Double
-                 ): TransformationResult = {
-      Try {
-        val img =  ImmutableImage.loader().fromFile(image)
-        val bordered = zoom(img, factor)
-        val outputFile = new File(outputDir, image.getName)
-        bordered.output(WebpWriter.DEFAULT, outputFile)
-      }}.toEither.left.map(ex => TransformationError(s"Error zooming in ${image.getName}: ${ex.getMessage}"))
-
-
+  /**
+   * Close up
+   *
+   * @param image  input
+   * @param factor as double
+   * @return Either an error message or the output File
+   */
+  def zoom( image: File, outputDir: File,factor: Double): TransformationResult =
+    withImage(image, outputDir)(_.zoom(factor),"Error zooming in")
 
   //for batch multi
-    /**
-     * Takes a list of Files and adds a border to them
-     * @param inputFiles input
-     * @param outputDir  output path
-     * @param color RGBColor
-     * @param thickness factor as double
-     * @return Either Seq of error messages or the output files
-     */
-    def addBorder(
-                   inputFiles: Seq[File],
-                   outputDir: File,
-                   color: RGBColor,
-                   thickness: Int
-                 ): Seq[TransformationResult] =
-      inputFiles.map(addBorder(_, outputDir, color, thickness))
+  /**
+   * Takes a list of Files and adds a border to them
+   *
+   * @param inputFiles input
+   * @param outputDir  output path
+   * @param color      RGBColor
+   * @param thickness  factor as double
+   * @return Either Seq of error messages or the output files
+   */
+  def addBorder(
+                 inputFiles: Seq[File],
+                 outputDir: File,
+                 color: RGBColor,
+                 thickness: Int
+               ): Seq[TransformationResult] =
+    inputFiles.map(addBorder(_, outputDir, color, thickness))
 
-    /**
-     * Takes a list of Files and scales them
-     * @param inputFiles input
-     * @param outputDir  output path
-     * @param factor factor as double
-     * @return Either Seq of error messages or the output files
-     */
-    def scale(
-               inputFiles: Seq[File],
-               outputDir: File,
-               factor: Double
-             ): Seq[TransformationResult] =
-      inputFiles.map(scale(_, outputDir, factor))
+  /**
+   * Takes a list of Files and scales them
+   *
+   * @param inputFiles input
+   * @param outputDir  output path
+   * @param factor     factor as double
+   * @return Either Seq of error messages or the output files
+   */
+  def scale(
+             inputFiles: Seq[File],
+             outputDir: File,
+             factor: Double
+           ): Seq[TransformationResult] =
+    inputFiles.map(scale(_, outputDir, factor))
 
-    /**
-     Takes a list of Files and zooms in them
-     * @param inputFiles input
-     * @param outputDir  output path
-     * @param factor factor as double
-     * @return Either Seq of error messages or the output files
-     */
-    def zoom(
-              inputFiles: Seq[File],
-              outputDir: File,
-              factor: Double
-            ): Seq[TransformationResult] =
-      inputFiles.map(zoom(_, outputDir, factor))
-  //2026
+  /**
+   * Takes a list of Files and zooms in them
+   *
+   * @param inputFiles input
+   * @param outputDir  output path
+   * @param factor     factor as double
+   * @return Either Seq of error messages or the output files
+   */
+  def zoom(
+            inputFiles: Seq[File],
+            outputDir: File,
+            factor: Double
+          ): Seq[TransformationResult] =
+    inputFiles.map(zoom(_, outputDir, factor))
+
+  private def withImage(
+                         input: File,
+                         outputDir: File,
+                         writer: ImageWriter = WebpWriter.DEFAULT
+                       )(
+                         transform: ImmutableImage => ImmutableImage,
+                         errorCtx: String
+                       ): TransformationResult =
+    Try {
+      val img = ImmutableImage.loader().fromFile(input)
+      val result = transform(img)
+      val outputFile = new File(outputDir, input.getName)
+      result.output(writer, outputFile)
+      outputFile
+    }.toEither.left.map(ex =>
+      TransformationError(s"$errorCtx ${input.getName}: ${ex.getMessage}")
+    )
+
+  private def writeAs(
+                       input: File,
+                       outputDir: File,
+                       format: ImageFormat
+                     ): TransformationResult =
+    Try {
+      val image = ImmutableImage.loader().fromFile(input)
+      val outputFile =
+        new File(outputDir, input.getName.replaceAll("\\.[^.]+$", format.extension))
+      image.output(format.writer, outputFile)
+      outputFile
+    }.toEither.left.map(ex =>
+      TransformationError(s"Error converting ${input.getName}: ${ex.getMessage}")
+    )
+
+
 }
