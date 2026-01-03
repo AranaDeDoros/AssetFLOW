@@ -1,5 +1,5 @@
-import web.utils.Utils
-import web.utils.Utils.{Desktop, Mobile, Webp}
+import web.utils.ImageTransforms
+import web.utils.ImageTransforms.{Desktop, Mobile, Webp}
 
 import java.awt.Color
 import java.io.File
@@ -12,7 +12,7 @@ class ImageUtilsTests extends munit.FunSuite {
   if (!outputDir.exists()) outputDir.mkdirs()
 
   val images: Seq[File] =
-    if (inputDir.exists()) Utils.listImages(inputDir)
+    if (inputDir.exists()) ImageTransforms.listImages(inputDir)
     else Seq.empty
 
 
@@ -25,14 +25,14 @@ class ImageUtilsTests extends munit.FunSuite {
   }
 
   test("convert images to WebP successfully") {
-    val results = Utils.convertTo(images, outputDir,Webp)
+    val results = ImageTransforms.convertTo(images, outputDir,Webp)
     val errors = results.collect { case Left(err) => err }
     assertEquals(errors.length, 0, s"Conversion errors: ${errors.mkString(", ")}")
   }
 
 
   test("desktop thumbnails created successfully") {
-    val thumbs = Utils.createThumbnail(images, outputDir, Desktop)
+    val thumbs = ImageTransforms.createThumbnail(images, outputDir, Desktop)
     val okFiles = thumbs.collect { case Right(f) => f }
     val errors  = thumbs.collect { case Left(e) => e }
     assertEquals(errors.length, 0, s"Errors: ${errors.mkString(", ")}")
@@ -41,7 +41,7 @@ class ImageUtilsTests extends munit.FunSuite {
 
 
   test("mobile thumbnails created successfully") {
-    val thumbs = Utils.createThumbnail(images, outputDir, Mobile)
+    val thumbs = ImageTransforms.createThumbnail(images, outputDir, Mobile)
     val okFiles = thumbs.collect { case Right(f) => f }
     val errors  = thumbs.collect { case Left(e) => e }
     assertEquals(errors.length, 0, s"Errors: ${errors.mkString(", ")}")
@@ -50,7 +50,7 @@ class ImageUtilsTests extends munit.FunSuite {
 
 
   test("placeholders generated successfully") {
-    val placeholders = Utils.generatePlaceholders(
+    val placeholders = ImageTransforms.generatePlaceholders(
       number     = 3,
       width      = 200,
       height     = 200,

@@ -1,6 +1,6 @@
 import pipes.{AssetBatch, OCRPipeline}
-import web.utils.Utils
-import web.utils.Utils.{Desktop, Webp}
+import web.utils.ImageTransforms
+import web.utils.ImageTransforms.{Desktop, Webp}
 
 import java.io.File
 
@@ -11,7 +11,7 @@ class PipeTests extends munit.FunSuite {
   if (!outputDir.exists()) outputDir.mkdirs()
 
   val images: Seq[File] =
-    if (inputDir.exists()) Utils.listImages(inputDir)
+    if (inputDir.exists()) ImageTransforms.listImages(inputDir)
     else Seq.empty
 
   val nImages = 3
