@@ -27,32 +27,26 @@ color manipulation, and OCR preprocessing; using a **functional approach**.
 | **ColorThief** | Aids in the palette extraction functionality |
 
 ---
-### "pipeline" helpers
-> to be removed in favour of abstractions, perhaps
-
+### helpers
 ````scala
+  Pipe()
+  .from("in")
+  .to("out")
+  .inspect("after load") { img =>
+    println(img.width, img.height)
+  }
+  .step(TransformationStep("grayscale", OCR.grayscale))
+  .inspect("after grayscale") { img =>
+    println("ok")
+  }
+  .dryRun()
 
-//batch pipe, 
-// different ops upon same input assets
-// independent results
-AssetBatch
-  .from("input")
-  .outputTo("output")
-  .convertTo(Webp)
-  .thumbnails(Desktop)
-  .run()
-
-//transformation pipe, 
-// different ops upon same input assets
-// previous output is the current op input
-OCRPipeline
-  .from("input")
-  .outputTo("output")
-  .contrast(Normal)
-  .grayscale()
-  .optimize(5.0, 1.3)
-  .rotate(1)
-  .run()
+Batch()
+  .from("in")
+  .to("out")
+  .foreach("convert") { (file, out, in) =>
+    ImageTransforms.convertTo(file, out, ImageTransforms.Webp)
+  }.dryRun()
 
 ````
 

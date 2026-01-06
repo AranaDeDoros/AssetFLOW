@@ -27,21 +27,6 @@ object Main extends App {
     }.dryRun()
 
 
-  //  AssetBatch
-  //    .from("input")
-  //    .outputTo("output")
-  //    .convertTo(Webp)
-  //    .thumbnails(Desktop)
-  //    .run()
-  //
-  //  OCRPipeline
-  //    .from("input")
-  //    .outputTo("output")
-  //    .contrast(Normal)
-  //    .grayscale()
-  //    .optimize(5.0, 1.3)
-  //    .rotate(1)
-  //    .run()
 
 //  //folders setup
 //  val inputDir = new File("input")

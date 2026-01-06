@@ -91,7 +91,7 @@ object OCR {
    * the midpoint (128).
    *
    * @param image  the input image
-   * @param factor contrast factor (1.0 = normal, >1.0 = higher contrast, <1.0 = lower contrast)
+   * @param level contrast level (1.0 = normal, >1.0 = higher contrast, <1.0 = lower contrast)
    * @return a new [[ImmutableImage]] with adjusted contrast
    */
   def contrast(image: ImmutableImage, level: ContrastLevel): ImmutableImage = {
